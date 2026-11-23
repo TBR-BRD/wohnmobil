@@ -8,6 +8,7 @@ Alle Geräte im Wohnmobil auf einem lokalen Home Assistant (Raspberry Pi 5) mit 
 
 | Datei | Zweck |
 |---|---|
+| [docs/installation-rpi5.md](docs/installation-rpi5.md) | **Installation Schritt für Schritt auf einem neuen Raspberry Pi 5** |
 | [docs/bluetooth-integration.md](docs/bluetooth-integration.md) | Architektur, Geräte, Integrationen, Einrichtung, offene Punkte |
 | [docs/entitaeten.md](docs/entitaeten.md) | Feste Entitäts-IDs, auf die Dashboard und Paket aufbauen |
 | [docs/dashboard.md](docs/dashboard.md) | Bedienoberfläche: Ansichten und Installation |

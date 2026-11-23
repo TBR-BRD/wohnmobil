@@ -77,6 +77,8 @@ Wohnmobil                                           Zuhause
 
 ## Einrichtung
 
+> Die ausführliche Anleitung für einen neuen Pi 5 steht in [installation-rpi5.md](installation-rpi5.md). Hier nur die Kurzfassung.
+
 ### 1. Home Assistant auf dem Pi
 1. Home Assistant OS auf die SSD schreiben, den Pi per LAN an die FRITZ!Box hängen.
 2. Bluetooth-Stick anschließen. Prüfen: *Einstellungen → Geräte & Dienste → Bluetooth*.
