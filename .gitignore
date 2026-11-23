@@ -1,0 +1,5 @@
+secrets.yaml
+.storage/
+*.db
+*.log
+.DS_Store

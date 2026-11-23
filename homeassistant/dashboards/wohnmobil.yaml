@@ -1,0 +1,472 @@
+# Dashboard „Wohnmobil“ – lokale Bedienung am RPi 5 (und zu Hause über Remote Home-Assistant)
+# Nur Standard-Karten von Home Assistant, plus custom:womo-level-card für die Wasserwaage.
+# Entitäts-IDs: siehe docs/entitaeten.md
+
+title: Wohnmobil
+views:
+  # ───────────────────────────── Übersicht ─────────────────────────────
+  - title: Übersicht
+    path: uebersicht
+    icon: mdi:rv-truck
+    type: sections
+    max_columns: 3
+    badges:
+      - type: entity
+        entity: sensor.wm_innen_temperatur
+        name: Innen
+        show_name: true
+      - type: entity
+        entity: sensor.wm_batterie_soc
+        name: Batterie
+        show_name: true
+      - type: entity
+        entity: sensor.wm_gas_fuellstand
+        name: Gas
+        show_name: true
+      - type: entity
+        entity: input_boolean.wm_alarm
+        name: Alarm
+        show_name: true
+        tap_action:
+          action: toggle
+    sections:
+      # Warnungen – erscheinen nur, wenn etwas nicht stimmt
+      - type: grid
+        cards:
+          - type: markdown
+            content: >-
+              <ha-alert alert-type="error">❄️ <b>Frostgefahr</b> – innen
+              {{ states('sensor.wm_innen_temperatur') }} °C. Heizung prüfen!</ha-alert>
+            visibility:
+              - condition: state
+                entity: binary_sensor.wm_frostgefahr
+                state: "on"
+          - type: markdown
+            content: >-
+              <ha-alert alert-type="warning">🔋 <b>Batterie niedrig</b> –
+              {{ states('sensor.wm_batterie_soc') }} %</ha-alert>
+            visibility:
+              - condition: state
+                entity: binary_sensor.wm_batterie_niedrig
+                state: "on"
+          - type: markdown
+            content: >-
+              <ha-alert alert-type="warning">🔥 <b>Gas fast leer</b> –
+              {{ states('sensor.wm_gas_fuellstand') }} %</ha-alert>
+            visibility:
+              - condition: state
+                entity: binary_sensor.wm_gas_niedrig
+                state: "on"
+          - type: markdown
+            content: >-
+              <ha-alert alert-type="info">🪫 Mindestens ein Sensor hat
+              <b>schwache Batterie</b> – siehe Ansicht „Geräte“.</ha-alert>
+            visibility:
+              - condition: state
+                entity: binary_sensor.wm_sensor_batterie_niedrig
+                state: "on"
+          - type: markdown
+            content: >-
+              <ha-alert alert-type="error">🚨 <b>Tür offen bei scharfem Alarm</b></ha-alert>
+            visibility:
+              - condition: state
+                entity: input_boolean.wm_alarm
+                state: "on"
+              - condition: state
+                entity: binary_sensor.wm_tuer
+                state: "on"
+
+      # Energie
+      - type: grid
+        cards:
+          - type: heading
+            heading: Energie
+            icon: mdi:lightning-bolt
+            tap_action:
+              action: navigate
+              navigation_path: energie
+          - type: gauge
+            entity: sensor.wm_batterie_soc
+            name: Batterie
+            unit: "%"
+            min: 0
+            max: 100
+            needle: true
+            segments:
+              - from: 0
+                color: "#db4437"
+              - from: 20
+                color: "#ffa600"
+              - from: 40
+                color: "#43a047"
+            grid_options:
+              columns: 6
+          - type: gauge
+            entity: sensor.wm_gas_fuellstand
+            name: Gas
+            unit: "%"
+            min: 0
+            max: 100
+            needle: true
+            segments:
+              - from: 0
+                color: "#db4437"
+              - from: 15
+                color: "#ffa600"
+              - from: 30
+                color: "#43a047"
+            grid_options:
+              columns: 6
+          - type: tile
+            entity: sensor.wm_solar_leistung
+            name: Solar
+            icon: mdi:solar-power-variant
+            color: amber
+          - type: tile
+            entity: sensor.wm_verbrauch
+            name: Verbrauch
+            icon: mdi:power-plug
+            color: deep-orange
+          - type: tile
+            entity: sensor.wm_batterie_leistung
+            name: Batterie
+            icon: mdi:battery-charging
+            color: green
+          - type: tile
+            entity: sensor.wm_wechselrichter_ac_leistung
+            name: 230 V
+            icon: mdi:power-socket-de
+            color: blue
+
+      # Klima & Sicherheit
+      - type: grid
+        cards:
+          - type: heading
+            heading: Klima & Sicherheit
+            icon: mdi:home-thermometer
+            tap_action:
+              action: navigate
+              navigation_path: klima
+          - type: tile
+            entity: sensor.wm_innen_temperatur
+            name: Innen
+            icon: mdi:thermometer
+            color: red
+          - type: tile
+            entity: sensor.wm_innen_luftfeuchte
+            name: Luftfeuchte
+            icon: mdi:water-percent
+            color: light-blue
+          - type: tile
+            entity: binary_sensor.wm_tuer
+            name: Tür / Fenster
+            icon: mdi:door
+          - type: tile
+            entity: binary_sensor.wm_bewegung
+            name: Bewegung
+            icon: mdi:motion-sensor
+          - type: tile
+            entity: input_boolean.wm_alarm
+            name: Alarm scharf
+            icon: mdi:shield-home
+            color: red
+            tap_action:
+              action: toggle
+            grid_options:
+              columns: 12
+          - type: tile
+            entity: sensor.womo_level_neigung_quer
+            name: Wasserwaage
+            icon: mdi:car-cruise-control
+            color: teal
+            tap_action:
+              action: navigate
+              navigation_path: nivellieren
+            grid_options:
+              columns: 12
+
+  # ───────────────────────────── Energie ─────────────────────────────
+  - title: Energie
+    path: energie
+    icon: mdi:lightning-bolt
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Batterie (Berger 120 Ah)
+            icon: mdi:battery
+          - type: tile
+            entity: sensor.wm_batterie_soc
+            name: Ladestand
+            color: green
+          - type: tile
+            entity: sensor.wm_batterie_spannung
+            name: Spannung
+            color: green
+          - type: tile
+            entity: sensor.wm_batterie_strom
+            name: Strom
+            color: green
+          - type: tile
+            entity: sensor.wm_batterie_temperatur
+            name: Temperatur
+            color: green
+          - type: tile
+            entity: sensor.wm_battery_sense_spannung
+            name: Battery Sense
+            icon: mdi:car-battery
+          - type: tile
+            entity: sensor.wm_battery_sense_temperatur
+            name: Battery Sense
+            icon: mdi:thermometer
+          - type: history-graph
+            title: Ladestand 24 h
+            hours_to_show: 24
+            entities:
+              - entity: sensor.wm_batterie_soc
+                name: Ladestand
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Solar (SmartSolar 100/20)
+            icon: mdi:solar-power-variant
+          - type: tile
+            entity: sensor.wm_solar_leistung
+            name: Leistung
+            color: amber
+          - type: tile
+            entity: sensor.wm_solar_ladestrom
+            name: Ladestrom
+            color: amber
+          - type: tile
+            entity: sensor.wm_solar_ertrag_heute
+            name: Ertrag heute
+            icon: mdi:solar-power
+            color: amber
+          - type: tile
+            entity: sensor.wm_solar_ladephase
+            name: Ladephase
+            icon: mdi:battery-sync
+            color: amber
+          - type: history-graph
+            title: Leistung 24 h
+            hours_to_show: 24
+            entities:
+              - entity: sensor.wm_solar_leistung
+                name: Solar
+              - entity: sensor.wm_verbrauch
+                name: Verbrauch
+          - type: statistics-graph
+            title: Solarertrag pro Tag
+            chart_type: bar
+            period: day
+            days_to_show: 14
+            stat_types:
+              - max
+            entities:
+              - entity: sensor.wm_solar_ertrag_heute
+                name: Ertrag
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Wechselrichter (Phoenix 12/500)
+            icon: mdi:power-socket-de
+          - type: tile
+            entity: sensor.wm_wechselrichter_zustand
+            name: Zustand
+            icon: mdi:sine-wave
+            color: blue
+          - type: tile
+            entity: sensor.wm_wechselrichter_ac_leistung
+            name: Leistung
+            color: blue
+          - type: tile
+            entity: sensor.wm_wechselrichter_ac_spannung
+            name: AC-Spannung
+            color: blue
+          - type: tile
+            entity: sensor.wm_wechselrichter_alarm
+            name: Warnung
+            icon: mdi:alert-circle-outline
+            color: red
+
+  # ───────────────────────────── Klima & Sicherheit ─────────────────────────────
+  - title: Klima
+    path: klima
+    icon: mdi:home-thermometer
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Raumklima
+            icon: mdi:home-thermometer
+          - type: tile
+            entity: sensor.wm_innen_temperatur
+            name: Temperatur
+            color: red
+          - type: tile
+            entity: sensor.wm_innen_luftfeuchte
+            name: Luftfeuchte
+            color: light-blue
+          - type: history-graph
+            title: Temperatur & Luftfeuchte 48 h
+            hours_to_show: 48
+            entities:
+              - entity: sensor.wm_innen_temperatur
+                name: Temperatur
+              - entity: sensor.wm_innen_luftfeuchte
+                name: Luftfeuchte
+          - type: tile
+            entity: input_number.wm_frost_schwelle
+            name: Frostwarnung unter
+            color: light-blue
+            features:
+              - type: numeric-input
+                style: slider
+            grid_options:
+              columns: 12
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Sicherheit
+            icon: mdi:shield-home
+          - type: tile
+            entity: input_boolean.wm_alarm
+            name: Alarm scharf
+            icon: mdi:shield-home
+            color: red
+            tap_action:
+              action: toggle
+            grid_options:
+              columns: 12
+          - type: tile
+            entity: binary_sensor.wm_tuer
+            name: Tür / Fenster
+            icon: mdi:door
+          - type: tile
+            entity: binary_sensor.wm_bewegung
+            name: Bewegung
+            icon: mdi:motion-sensor
+          - type: logbook
+            title: Ereignisse
+            hours_to_show: 24
+            entities:
+              - binary_sensor.wm_tuer
+              - binary_sensor.wm_bewegung
+              - input_boolean.wm_alarm
+
+  # ───────────────────────────── Nivellieren ─────────────────────────────
+  - title: Nivellieren
+    path: nivellieren
+    icon: mdi:car-cruise-control
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: tile
+            entity: switch.womo_level_nivellieren
+            name: Nivellieren
+            icon: mdi:bluetooth-connect
+            color: teal
+            tap_action:
+              action: toggle
+            grid_options:
+              columns: 12
+          # Werte aus dem Wasserwaage-Projekt – Spurbreite noch nachmessen
+          - type: custom:womo-level-card
+            title: Benimar Tessoro 488
+            pitch_entity: sensor.womo_level_neigung_laengs
+            roll_entity: sensor.womo_level_neigung_quer
+            wheelbase: 395
+            track: 170
+            max_wedge: 10
+            min_lift: 0.5
+            tolerance: 0.3
+            default_view: overview
+            grid_options:
+              columns: 12
+
+  # ───────────────────────────── Geräte & Einstellungen ─────────────────────────────
+  - title: Geräte
+    path: geraete
+    icon: mdi:cog
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Sensor-Batterien
+            icon: mdi:battery-heart-variant
+          - type: tile
+            entity: sensor.wm_ht_batterie
+            name: H&T Gen3
+          - type: tile
+            entity: sensor.wm_tuer_batterie
+            name: Tür/Fenster
+          - type: tile
+            entity: sensor.wm_bewegung_batterie
+            name: Bewegung
+          - type: tile
+            entity: sensor.wm_gas_sensor_batterie
+            name: Mopeka
+            icon: mdi:battery
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Gas kalibrieren
+            icon: mdi:gas-cylinder
+          - type: markdown
+            content: >-
+              Aktuelle Füllhöhe: **{{ states('sensor.wm_gas_hoehe') }} mm**
+              (Qualität: {{ states('sensor.wm_gas_messqualitaet') }}).
+              Bei voller Flasche diesen Wert bei „voll“ eintragen,
+              bei leerer bei „leer“.
+          - type: tile
+            entity: input_number.wm_gas_hoehe_voll
+            name: Füllhöhe voll
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: input_number.wm_gas_hoehe_leer
+            name: Füllhöhe leer
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: sensor.wm_gas_temperatur
+            name: Flaschentemperatur
+            grid_options:
+              columns: 12
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Warnschwellen
+            icon: mdi:bell-alert
+          - type: tile
+            entity: input_number.wm_batterie_warnschwelle
+            name: Batterie unter
+            features:
+              - type: numeric-input
+                style: slider
+            grid_options:
+              columns: 12
+          - type: tile
+            entity: input_number.wm_gas_warnschwelle
+            name: Gas unter
+            features:
+              - type: numeric-input
+                style: slider
+            grid_options:
+              columns: 12
