@@ -18,6 +18,29 @@ Ziel: Alle Geräte im Wohnmobil liefern ihre Daten an Home Assistant, möglichst
 | Shelly H&T Gen3 | **WLAN** (kein Bluetooth) | `shelly` (Core) | geplant |
 | Shelly BLU Gateway | BLE → WLAN | `shelly` (Core), optional als BT-Proxy | optional |
 
+## Produktlinks
+
+| Gerät | Link |
+|---|---|
+| Shelly BLU Gateway | https://www.shelly.com/de/products/shelly-blu-gateway |
+| Berger LiFePO4 Lithium Batterie Pro 120 Ah 12 V mit Bluetooth & Heizung | https://www.fritz-berger.de/artikel/berger-lifepo4-lithium-batterie-120-ah-12-v-mit-bluetooth-mit-und-ohne-heizung-400265?varid=441139 |
+| Victron SmartSolar MPPT 100/20 | https://www.victronenergy.de/solar-charge-controllers/smartsolar-mppt-75-10-75-15-100-15-100-20 |
+| Victron Smart Battery Sense 12 V | https://www.victronenergy.de/meters-and-sensors/smart-battery-sense |
+| Victron Phoenix Inverter VE.Direct 12/500 230 V | https://www.victronenergy.de/inverters/phoenix-inverter-vedirect-250va-800va |
+| Victron VE.Direct Bluetooth Smart Dongle | https://www.victronenergy.de/communication-centres/ve-direct-bluetooth-smart-dongle |
+| Mopeka Pro Füllstandsmessgerät für Gasflaschen | https://www.fritz-berger.de/artikel/mopeka-pro-fuellstand-messgeraet-fuer-gasflaschen-mit-bluetooth-451114 |
+| Shelly H&T Gen3 | https://www.shelly.com/de/products/shelly-h-t-gen3-matte-white |
+| Shelly BLU Door/Window ZB | https://www.shelly.com/de/products/shelly-blu-door-window-zb-white |
+| Shelly BLU Motion ZB | https://www.shelly.com/de/products/shelly-blu-motion-zb |
+
+### Integrations-Dokumentation
+
+- Bluetooth: https://www.home-assistant.io/integrations/bluetooth/
+- BTHome: https://www.home-assistant.io/integrations/bthome/
+- Mopeka: https://www.home-assistant.io/integrations/mopeka/
+- Shelly: https://www.home-assistant.io/integrations/shelly/
+- BMS_BLE-HA (HACS): https://github.com/patman15/BMS_BLE-HA
+
 ## Einrichtung
 
 ### 1. Bluetooth-Dongle
